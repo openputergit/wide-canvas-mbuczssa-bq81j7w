@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahabharata 8D Simulation</title>
+    <script src="https://unpkg.com/three@0.137.5/build/three.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.skypack.dev/howler"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1604608678762-fe6c087be16f?q=80&w=1933&auto=format&fit=crop') center/cover fixed;
+            margin: 0;
+            min-height: 100vh;
+            color: #fff;
+        }
+        .game-option {
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid goldenrod;
+        }
+        .game-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(218, 165, 32, 0.3);
+        }
+        .chapter-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .chapter-list.active {
+            max-height: 1000px;
+        }
+        #gameCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+    <div id="loadingScreen" class="loading-screen">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-t-golden border-r-golden border-b-transparent border-l-transparent rounded-full animate-spin mb-4"></div>
+            <h2 class="text-2xl text-golden">Loading Mahabharata Simulation...</h2>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <main class="min-h-screen flex flex-col items-center justify-center p-4">
+        <h1 class="text-4xl md:text-6xl text-center mb-8 text-golden font-bold">Mahabharata 8D Simulation</h1>
+        
+        <div class="grid md:grid-cols-2 gap-8 max-w-6xl w-full">
+            <div class="game-option p-6 rounded-lg text-center cursor-pointer" onclick="selectGameMode('original')">
+                <h2 class="text-3xl mb-4 text-golden">Original Mahabharata</h2>
+                <p class="mb-4">Experience the epic tale as it was written in the ancient texts</p>
+                <div class="chapter-list" id="originalChapters">
+                    <!-- Chapters will be populated via JavaScript -->
+                </div>
+            </div>
+
+            <div class="game-option p-6 rounded-lg text-center cursor-pointer" onclick="selectGameMode('reverse')">
+                <h2 class="text-3xl mb-4 text-golden">Reverse Mahabharata</h2>
+                <p class="mb-4">Explore alternate possibilities and outcomes</p>
+                <div class="chapter-list" id="reverseChapters">
+                    <!-- Chapters will be populated via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 3D Background Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const particles = [];
+        for(let i = 0; i < 1000; i++) {
+            const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0xDAA520 });
+            const particle = new THREE.Mesh(geometry, material);
+            particle.position.set(
+                Math.random() * 2000 - 1000,
+                Math.random() * 2000 - 1000,
+                Math.random() * 2000 - 1000
+            );
+            particles.push(particle);
+            scene.add(particle);
+        }
+
+        camera.position.z = 5;
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            particles.forEach(particle => {
+                particle.rotation.x += 0.001;
+                particle.rotation.y += 0.001;
+            });
+            renderer.render(scene, camera);
+        };
+        animate();
+
+        // Game Logic
+        const chapters = {
+            original: [
+                "Adi Parva - The Beginning",
+                "Sabha Parva - The Assembly Hall",
+                "Vana Parva - The Forest",
+                "Virata Parva - The Concealment",
+                "Udyoga Parva - The Effort",
+                "Bhishma Parva - The Book of Bhishma",
+                "Drona Parva - The Book of Drona",
+                "Karna Parva - The Book of Karna"
+            ],
+            reverse: [
+                "Alternative Beginning",
+                "Different Choices",
+                "Changed Alliances",
+                "New Perspectives",
+                "Altered Battles",
+                "Different Outcomes",
+                "Peace Negotiations",
+                "Alternative Ending"
+            ]
+        };
+
+        const backgroundMusic = new Howl({
+            src: ['https://example.com/background-music.mp3'],
+            loop: true,
+            volume: 0.5
+        });
+
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                backgroundMusic.play();
+            }, 2000);
+        };
+
+        function selectGameMode(mode) {
+            const chapterList = document.getElementById(`${mode}Chapters`);
+            chapterList.classList.toggle('active');
+            
+            if (chapterList.innerHTML === '') {
+                const chapterHTML = chapters[mode].map((chapter, index) => `
+                    <div class="chapter-item p-4 my-2 bg-black bg-opacity-50 rounded cursor-pointer hover:bg-golden hover:bg-opacity-20 transition-all"
+                         onclick="startChapter('${mode}', ${index})">
+                        <h3 class="text-xl">${chapter}</h3>
+                    </div>
+                `).join('');
+                chapterList.innerHTML = chapterHTML;
+            }
+
+            new Howl({
+                src: ['https://example.com/click-sound.mp3']
+            }).play();
+        }
+
+        function startChapter(mode, chapterIndex) {
+            // Save game state to database
+            fetch('https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/db', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ucbzrDXdMPZ6xAqV6LGH6fsOr173',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: localStorage.getItem('userId') || `user-${Date.now()}`,
+                    appSlug: 'mahabharata-8d',
+                    action: 'create',
+                    table: 'game_progress',
+                    data: {
+                        mode: mode,
+                        chapter: chapterIndex,
+                        timestamp: new Date().toISOString()
+                    }
+                })
+            });
+
+            alert(`Starting ${mode} Mahabharata - Chapter ${chapterIndex + 1}`);
+            // Here you would initialize the 8D simulation for the selected chapter
+        }
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
